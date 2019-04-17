@@ -1,0 +1,3 @@
+Moves RC Car
+moveDir	Movement Direction for Car	3	SLIDER	Z Axis	0	1.0	0.0
+turnDir	Turning Direction for Car	3	SLIDER	X Axis	0	1.0	0.0
