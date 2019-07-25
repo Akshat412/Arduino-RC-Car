@@ -4,20 +4,13 @@ import net.java.games.input.*;
 import org.gamecontrolplus.*;
 import org.gamecontrolplus.gui.*;
 
-import cc.arduino.*;
-import org.firmata.*;
-
 ControlDevice cont;
 ControlIO control;
 
-Arduino arduino;
+Serial myPort;
 
-float move, turn;
-
-int in1 = 2; 
-int in2 = 3;
-int in3 = 7;
-int in4 = 8;
+float move, turn, speed, turn_s;
+char dir;
 
 void setup()
 {
@@ -32,66 +25,41 @@ void setup()
     System.exit(-1);
   }
   
-  arduino = new Arduino(this, Arduino.list()[1], 57600);
-  arduino.pinMode(in1, Arduino.OUTPUT);
-  arduino.pinMode(in2, Arduino.OUTPUT);
-  arduino.pinMode(in3, Arduino.OUTPUT);
-  arduino.pinMode(in4, Arduino.OUTPUT);
-  
-  //Control for motor 1
-  arduino.digitalWrite(in1, Arduino.LOW);
-  arduino.digitalWrite(in2, Arduino.LOW);
-     
-  //Control for motor 2
-  arduino.digitalWrite(in3, Arduino.LOW);
-  arduino.digitalWrite(in4, Arduino.LOW);
-  
   move = turn = 0;
+  
+  myPort = new Serial(this, "COM5", 9600); // Starts the serial communication
+  myPort.bufferUntil('\n'); // Defines up to which character the data from the serial port will be read. The character '\n' or 'New Line'
 }
 
 public void getUserInput()
 {
-  move = 1024 * cont.getSlider("moveDir").getValue();
-  turn = 1024 * cont.getSlider("turnDir").getValue();
+  move = 1000 * cont.getSlider("moveDir").getValue();
+  turn = 1000 * cont.getSlider("turnDir").getValue(); 
   
-  if(move < 100 && move > -100)
+  if(move > 300)
   {
-    //Control for motor 1
-    arduino.digitalWrite(in1, Arduino.LOW);
-    arduino.digitalWrite(in2, Arduino.LOW);
-     
-    //Control for motor 2
-    arduino.digitalWrite(in3, Arduino.LOW);
-    arduino.digitalWrite(in4, Arduino.LOW);
+    dir = '1';  
   }
   
-  else if(move > 100)
+  else if(move > -300 && move < 300)
   {
-    //Control for motor 1
-    arduino.digitalWrite(in1, Arduino.LOW);
-    arduino.digitalWrite(in2, Arduino.HIGH);
-     
-    //Control for motor 2
-    arduino.digitalWrite(in3, Arduino.LOW);
-    arduino.digitalWrite(in4, Arduino.HIGH);
+    dir = '0';
   }
   
-  else if(move < 100)
+  else
   {
-    //Control for motor 1
-    arduino.digitalWrite(in1, Arduino.HIGH);
-    arduino.digitalWrite(in2, Arduino.LOW);
-     
-    //Control for motor 2
-    arduino.digitalWrite(in3, Arduino.HIGH);
-    arduino.digitalWrite(in4, Arduino.LOW);
+    dir = '1'; 
   }
+  
 }
 
 void draw()
 {
   getUserInput();
-  println(move);
+  println(int(dir));
   if(move < -100) background(-1 * move, turn, 255);
-  if(move > 100) background(move, turn, 255);
+  else if(move > 100) background(move, turn, 255);
+  else background(0, turn, 255);
+  
+  myPort.write(dir);
 }
