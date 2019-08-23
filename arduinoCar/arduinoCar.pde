@@ -12,6 +12,8 @@ Serial myPort;
 float move, turn, speed, turn_s;
 char dir;
 
+int intMove, intTurn;
+
 void setup()
 {
   size(360, 200);
@@ -33,33 +35,23 @@ void setup()
 
 public void getUserInput()
 {
-  move = 1000 * cont.getSlider("moveDir").getValue();
-  turn = 1000 * cont.getSlider("turnDir").getValue(); 
+  move = cont.getSlider("moveDir").getValue();
+  turn = cont.getSlider("turnDir").getValue();
   
-  if(move > 300)
-  {
-    dir = '1';  
-  }
-  
-  else if(move > -300 && move < 300)
-  {
-    dir = '0';
-  }
-  
-  else
-  {
-    dir = '1'; 
-  }
-  
+  intMove = (int)map(move, -1, 1, 0, 255);
+  intTurn = (int)map(turn, -1, 1, 0, 255);
 }
 
 void draw()
 {
   getUserInput();
-  println(int(dir));
+  println(int(move));
   if(move < -100) background(-1 * move, turn, 255);
   else if(move > 100) background(move, turn, 255);
   else background(0, turn, 255);
   
-  myPort.write(dir);
+  byte out[] = new byte[2];
+  out[0] = byte(intMove);
+  out[1] = byte(intTurn);
+  myPort.write(out);
 }
